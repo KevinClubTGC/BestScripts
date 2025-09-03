@@ -1,0 +1,260 @@
+local player = game.Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+-- ===== ScreenGui =====
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SterlingHubGui"
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- ===== MainFrame scrollable y arrastrable =====
+local mainFrame = Instance.new("ScrollingFrame")
+mainFrame.Size = UDim2.new(0, 250, 0, 285) -- tamaño actualizado
+mainFrame.Position = UDim2.new(0.5, -125, 0.5, -142) -- centrado
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.CanvasSize = UDim2.new(0,0,0,0)
+mainFrame.ScrollBarThickness = 6
+mainFrame.Active = true
+mainFrame.Parent = ScreenGui
+
+-- ===== Bordes RGB =====
+local border = Instance.new("UIStroke")
+border.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+border.Thickness = 2
+border.Parent = mainFrame
+
+RunService.RenderStepped:Connect(function(step)
+	local t = tick()
+	border.Color = Color3.fromHSV(t % 1, 1, 1)
+end)
+
+-- ===== Layout principal =====
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 6)
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.VerticalAlignment = Enum.VerticalAlignment.Top
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Parent = mainFrame
+
+local function updateCanvas()
+	mainFrame.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 10)
+end
+layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
+
+-- ===== Botón Toggle =====
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 80, 0, 30)
+toggleBtn.Position = UDim2.new(0, 0, 0, 40)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+toggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
+toggleBtn.Font = Enum.Font.SourceSansBold
+toggleBtn.TextSize = 18
+toggleBtn.Text = "Toggle"
+toggleBtn.Parent = ScreenGui
+
+toggleBtn.MouseButton1Click:Connect(function()
+	mainFrame.Visible = not mainFrame.Visible
+end)
+
+-- ===== Texto grande arriba =====
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1,0,0,40)
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextColor3 = Color3.fromRGB(255,255,255)
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 28
+titleLabel.Text = "Get Sterling"
+titleLabel.Parent = mainFrame
+
+-- ===== Texto abajo "Created by Kevin" =====
+local footerLabel = Instance.new("TextLabel")
+footerLabel.Size = UDim2.new(1,0,0,20)
+footerLabel.BackgroundTransparency = 1
+footerLabel.TextColor3 = Color3.fromRGB(200,200,200)
+footerLabel.Font = Enum.Font.SourceSansBold
+footerLabel.TextSize = 14
+footerLabel.Text = "Created by Kevin"
+footerLabel.Parent = mainFrame
+
+-- ===== Funciones =====
+local function rgbToString(color)
+	local r = math.floor(color.R*255)
+	local g = math.floor(color.G*255)
+	local b = math.floor(color.B*255)
+	return string.format("RGB(%d, %d, %d)", r, g, b)
+end
+
+local function teleportTo(position)
+	local char = player.Character or player.CharacterAdded:Wait()
+	if char and char:FindFirstChild("HumanoidRootPart") then
+		char.HumanoidRootPart.CFrame = CFrame.new(position) + Vector3.new(0,5,0)
+	end
+end
+
+-- ===== Arrastrable PC y móvil =====
+local dragging = false
+local dragInput, mousePos, framePos
+
+local function update(input)
+	local delta = input.Position - mousePos
+	mainFrame.Position = UDim2.new(0, framePos.X.Offset + delta.X, 0, framePos.Y.Offset + delta.Y)
+end
+
+mainFrame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragInput = input
+		mousePos = input.Position
+		framePos = mainFrame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+mainFrame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if dragging and input == dragInput then
+		update(input)
+	end
+end)
+
+-- ===== Función para crear menús =====
+local function createMenu(name)
+	local toggleBtn = Instance.new("TextButton")
+	toggleBtn.Size = UDim2.new(1,-20,0,30)
+	toggleBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+	toggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
+	toggleBtn.Font = Enum.Font.SourceSansBold
+	toggleBtn.TextSize = 16
+	toggleBtn.Text = name
+	toggleBtn.Parent = mainFrame
+
+	local optionsFrame = Instance.new("Frame")
+	optionsFrame.Size = UDim2.new(1,-20,0,0)
+	optionsFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	optionsFrame.ClipsDescendants = true
+	optionsFrame.Parent = mainFrame
+
+	local scrolling = Instance.new("ScrollingFrame")
+	scrolling.Size = UDim2.new(1,0,1,0)
+	scrolling.CanvasSize = UDim2.new(0,0,0,0)
+	scrolling.ScrollBarThickness = 6
+	scrolling.BackgroundTransparency = 1
+	scrolling.Parent = optionsFrame
+
+	local listLayout = Instance.new("UIListLayout")
+	listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	listLayout.Padding = UDim.new(0,4)
+	listLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+	listLayout.Parent = scrolling
+
+	local expanded = false
+
+	local function updateOptions()
+		local contentSize = listLayout.AbsoluteContentSize
+		local maxHeight = 120
+		local targetHeight = math.min(contentSize.Y+6, maxHeight)
+		scrolling.CanvasSize = UDim2.new(0,0,0,contentSize.Y+6)
+		optionsFrame.Size = UDim2.new(1,-20,0, expanded and targetHeight or 0)
+	end
+
+	toggleBtn.MouseButton1Click:Connect(function()
+		expanded = not expanded
+		updateOptions()
+	end)
+
+	listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		if expanded then updateOptions() end
+	end)
+
+	return toggleBtn, optionsFrame, scrolling, listLayout, function(optionPos)
+		teleportTo(optionPos)
+	end
+end
+
+-- ===== Crear menús =====
+local bookToggle, bookFrame, bookScroll, bookLayout, bookTeleportFunc = createMenu("Book TP")
+local placeToggle, placeFrame, placeScroll, placeLayout, placeTeleportFunc = createMenu("Place TP")
+local computerToggle, computerFrame, computerScroll, computerLayout, computerTeleportFunc = createMenu("Computer TP")
+
+-- ===== Opciones Book =====
+local libraryModel = workspace:FindFirstChild("The Library by Drainhp & CodedAbyss")
+if libraryModel then
+	for _, model in ipairs(libraryModel:GetChildren()) do
+		if model:IsA("Model") and model.Name:find("BookModel") then
+			local colorPart = model:FindFirstChildWhichIsA("BasePart")
+			if colorPart then
+				local btn = Instance.new("TextButton")
+				btn.Size = UDim2.new(1,0,0,25)
+				btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+				btn.TextColor3 = Color3.fromRGB(255,255,255)
+				btn.Font = Enum.Font.SourceSans
+				btn.TextSize = 14
+				btn.Text = "   "..rgbToString(colorPart.Color)
+				btn.Parent = bookScroll
+
+				btn.MouseButton1Click:Connect(function()
+					bookToggle.Text = rgbToString(colorPart.Color)
+					bookTeleportFunc(colorPart.Position)
+				end)
+			end
+		end
+	end
+end
+
+-- ===== Opciones Place =====
+local placeList = {
+	{"Put Code", Vector3.new(276.09,26.07,131.50)},
+	{"Coin", Vector3.new(84.52,25.97,-2.10)},
+	{"Arcade Machine", Vector3.new(154.18,12.08,300.75)}
+}
+for _, p in ipairs(placeList) do
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1,0,0,25)
+	btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+	btn.TextColor3 = Color3.fromRGB(255,255,255)
+	btn.Font = Enum.Font.SourceSans
+	btn.TextSize = 14
+	btn.Text = p[1]
+	btn.Parent = placeScroll
+
+	btn.MouseButton1Click:Connect(function()
+		placeToggle.Text = p[1]
+		placeTeleportFunc(p[2])
+	end)
+end
+
+-- ===== Opciones Computer =====
+local computerList = {
+	{"Green Computer", Vector3.new(-44.36,4.81,-101.76)},
+	{"Blue Computer", Vector3.new(-110.18,4.78,-275.58)},
+	{"Red Computer", Vector3.new(8.37,4.21,-158.51)},
+	{"Yellow Computer", Vector3.new(52.98,5.41,-246.09)},
+	{"Exit Door", Vector3.new(56.33,3.90,-130.97)}
+}
+for _, c in ipairs(computerList) do
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1,0,0,25)
+	btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+	btn.TextColor3 = Color3.fromRGB(255,255,255)
+	btn.Font = Enum.Font.SourceSans
+	btn.TextSize = 14
+	btn.Text = c[1]
+	btn.Parent = computerScroll
+
+	btn.MouseButton1Click:Connect(function()
+		computerToggle.Text = c[1]
+		computerTeleportFunc(c[2])
+	end)
+end
+
+updateCanvas()
