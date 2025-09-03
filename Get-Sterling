@@ -9,8 +9,8 @@ ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
 -- ===== MainFrame scrollable y arrastrable =====
 local mainFrame = Instance.new("ScrollingFrame")
-mainFrame.Size = UDim2.new(0, 250, 0, 285) -- tamaño actualizado
-mainFrame.Position = UDim2.new(0.5, -125, 0.5, -142) -- centrado
+mainFrame.Size = UDim2.new(0, 250, 0, 285)
+mainFrame.Position = UDim2.new(0.5, -125, 0.5, -142)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.CanvasSize = UDim2.new(0,0,0,0)
 mainFrame.ScrollBarThickness = 6
@@ -91,22 +91,21 @@ local function teleportTo(position)
 	end
 end
 
--- ===== Arrastrable PC y móvil =====
+-- ===== Arrastrable PC y móvil (arreglado) =====
 local dragging = false
-local dragInput, mousePos, framePos
+local dragInput, startPos, startMousePos
 
 local function update(input)
-	local delta = input.Position - mousePos
-	mainFrame.Position = UDim2.new(0, framePos.X.Offset + delta.X, 0, framePos.Y.Offset + delta.Y)
+	local delta = input.Position - startMousePos
+	mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 end
 
 mainFrame.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 		dragging = true
 		dragInput = input
-		mousePos = input.Position
-		framePos = mainFrame.Position
-
+		startMousePos = input.Position
+		startPos = mainFrame.Position
 		input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
 				dragging = false
@@ -154,7 +153,8 @@ local function createMenu(name)
 	local listLayout = Instance.new("UIListLayout")
 	listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	listLayout.Padding = UDim.new(0,4)
-	listLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+	listLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+	listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	listLayout.Parent = scrolling
 
 	local expanded = false
@@ -189,23 +189,22 @@ local computerToggle, computerFrame, computerScroll, computerLayout, computerTel
 -- ===== Opciones Book =====
 local libraryModel = workspace:FindFirstChild("The Library by Drainhp & CodedAbyss")
 if libraryModel then
+	local count = 1
 	for _, model in ipairs(libraryModel:GetChildren()) do
 		if model:IsA("Model") and model.Name:find("BookModel") then
 			local colorPart = model:FindFirstChildWhichIsA("BasePart")
 			if colorPart then
 				local btn = Instance.new("TextButton")
 				btn.Size = UDim2.new(1,0,0,25)
-				btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
-				btn.TextColor3 = Color3.fromRGB(255,255,255)
-				btn.Font = Enum.Font.SourceSans
-				btn.TextSize = 14
-				btn.Text = "   "..rgbToString(colorPart.Color)
+				btn.BackgroundColor3 = colorPart.Color
+				btn.Text = ""
 				btn.Parent = bookScroll
 
 				btn.MouseButton1Click:Connect(function()
-					bookToggle.Text = rgbToString(colorPart.Color)
+					bookToggle.Text = "Book "..count
 					bookTeleportFunc(colorPart.Position)
 				end)
+				count = count + 1
 			end
 		end
 	end
