@@ -1,0 +1,180 @@
+-- Crear ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MiniGUI"
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Frame principal (más alto)
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 150, 0, 210)
+frame.Position = UDim2.new(0.85, 0, 0.05, 0)
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.BackgroundTransparency = 0.2
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
+
+-- Borde RGB animado para el frame
+local border = Instance.new("UIStroke")
+border.Thickness = 3
+border.Parent = frame
+
+task.spawn(function()
+    local hue = 0
+    while true do
+        hue = (hue + 0.01) % 1
+        border.Color = Color3.fromHSV(hue, 1, 1)
+        task.wait(0.03)
+    end
+end)
+
+-- Título con texto RGB animado
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(1, 0, 0.15, 0)
+label.BackgroundTransparency = 1
+label.Text = "Galaxy Hub"
+label.Font = Enum.Font.GothamBold
+label.TextSize = 20
+label.TextStrokeTransparency = 0.8
+label.Parent = frame
+
+task.spawn(function()
+    local hue = 0
+    while true do
+        hue = (hue + 0.01) % 1
+        label.TextColor3 = Color3.fromHSV(hue, 1, 1)
+        task.wait(0.03)
+    end
+end)
+
+-- Función para crear botones y devolverlos
+local function crearBoton(texto, orden)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -10, 0.18, 0)
+    btn.Position = UDim2.new(0, 5, 0.15 + (orden * 0.22), 0)
+    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    btn.Text = texto
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 18
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Parent = frame
+    return btn
+end
+
+-- Crear botones
+local antiHitBtn = crearBoton("⚔ Anti Hit", 0)
+crearBoton("🏠 Go Base", 1)
+crearBoton("⚡ Speed Boost", 2)
+crearBoton("🎯 Aimbot", 3)
+
+-- Función para togglear invisibilidad y teletransportar
+local function toggleAntiHit()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if not character then return end
+
+    local currentlyInvisible = antiHitBtn:GetAttribute("Invisible")
+
+    if currentlyInvisible then
+        -- Volver todo visible
+        for _, part in pairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Transparency = 0
+            elseif part:IsA("Decal") then
+                part.Transparency = 0
+            elseif part:IsA("ParticleEmitter") or part:IsA("Trail") then
+                part.Enabled = true
+            end
+        end
+        antiHitBtn:SetAttribute("Invisible", false)
+    else
+        -- Volver invisible todo excepto HumanoidRootPart visible
+        for _, part in pairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                if part.Name == "HumanoidRootPart" then
+                    part.Transparency = 0
+                else
+                    part.Transparency = 1
+                end
+            elseif part:IsA("Decal") then
+                part.Transparency = 1
+            elseif part:IsA("ParticleEmitter") or part:IsA("Trail") then
+                part.Enabled = false
+            end
+        end
+        antiHitBtn:SetAttribute("Invisible", true)
+    end
+
+    -- Teletransportar personaje a (0,5,0) en Workspace
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.CFrame = CFrame.new(0, 5, 0)
+    end
+end
+
+antiHitBtn.MouseButton1Click:Connect(toggleAntiHit)
+
+-- Botón toggle con borde RGB animado, texto blanco fijo
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0, 70, 0, 30)
+toggleButton.Position = UDim2.new(0, 10, 0, 50) -- Un poco más abajo
+toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+toggleButton.BorderSizePixel = 0
+toggleButton.Text = "Toggle"
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.TextSize = 18
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Parent = screenGui
+
+-- Borde RGB para toggleButton
+local toggleBorder = Instance.new("UIStroke")
+toggleBorder.Thickness = 3
+toggleBorder.Parent = toggleButton
+
+-- Animación RGB borde del toggleButton
+task.spawn(function()
+    local hue = 0
+    while true do
+        hue = (hue + 0.01) % 1
+        toggleBorder.Color = Color3.fromHSV(hue, 1, 1)
+        task.wait(0.03)
+    end
+end)
+
+local guiVisible = true
+toggleButton.MouseButton1Click:Connect(function()
+    guiVisible = not guiVisible
+    frame.Visible = guiVisible
+end)
+
+-- Función para mover la GUI arrastrando el título
+local UserInputService = game:GetService("UserInputService")
+local dragging = false
+local dragStart
+local startPos
+
+label.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+label.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        if dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end
+end)
