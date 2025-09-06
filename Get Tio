@@ -1,0 +1,255 @@
+local player = game.Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+-- ===== ScreenGui =====
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "TioHub"
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- ===== MainFrame scrollable y arrastrable =====
+local mainFrame = Instance.new("ScrollingFrame")
+mainFrame.Size = UDim2.new(0, 250, 0, 300)
+mainFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.CanvasSize = UDim2.new(0,0,0,0)
+mainFrame.ScrollBarThickness = 6
+mainFrame.Active = true
+mainFrame.Parent = ScreenGui
+
+-- ===== Bordes RGB =====
+local border = Instance.new("UIStroke")
+border.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+border.Thickness = 2
+border.Parent = mainFrame
+RunService.RenderStepped:Connect(function()
+	border.Color = Color3.fromHSV(tick() % 1, 1, 1)
+end)
+
+-- ===== Layout principal =====
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 6)
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.VerticalAlignment = Enum.VerticalAlignment.Top
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Parent = mainFrame
+
+local function updateCanvas()
+	mainFrame.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 10)
+end
+layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
+
+-- ===== Botón Toggle =====
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 80, 0, 30)
+toggleBtn.Position = UDim2.new(0.5, -40, 0, 0)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+toggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
+toggleBtn.Font = Enum.Font.SourceSansBold
+toggleBtn.TextSize = 18
+toggleBtn.Text = "Toggle"
+toggleBtn.Parent = ScreenGui
+toggleBtn.MouseButton1Click:Connect(function()
+	mainFrame.Visible = not mainFrame.Visible
+end)
+
+-- ===== Título =====
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1,0,0,40)
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextColor3 = Color3.fromRGB(255,255,255)
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 28
+titleLabel.Text = "TioHub"
+titleLabel.Parent = mainFrame
+
+-- ===== Footer arriba de botones =====
+local footerLabel = Instance.new("TextLabel")
+footerLabel.Size = UDim2.new(1,0,0,20)
+footerLabel.BackgroundTransparency = 1
+footerLabel.TextColor3 = Color3.fromRGB(200,200,200)
+footerLabel.Font = Enum.Font.SourceSansBold
+footerLabel.TextSize = 14
+footerLabel.Text = "Created by Kevin"
+footerLabel.Parent = mainFrame
+
+-- ===== Botón Item GUI =====
+local itemBtn = Instance.new("TextButton")
+itemBtn.Size = UDim2.new(1, -20, 0, 30)
+itemBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+itemBtn.TextColor3 = Color3.fromRGB(255,255,255)
+itemBtn.Font = Enum.Font.SourceSansBold
+itemBtn.TextSize = 16
+itemBtn.Text = "Item Gui"
+itemBtn.Parent = mainFrame
+itemBtn.MouseButton1Click:Connect(function()
+	loadstring(game:HttpGet(('https://raw.githubusercontent.com/lolpoppyus/Roblox-Lua/master/Piggy'),true))()
+end)
+
+-- ===== Menú desplegable Docks Code =====
+local docksBtn = Instance.new("TextButton")
+docksBtn.Size = UDim2.new(1, -20, 0, 30)
+docksBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+docksBtn.TextColor3 = Color3.fromRGB(255,255,255)
+docksBtn.Font = Enum.Font.SourceSansBold
+docksBtn.TextSize = 16
+docksBtn.Text = "Docks Code"
+docksBtn.Parent = mainFrame
+
+local docksFrame = Instance.new("Frame")
+docksFrame.Size = UDim2.new(1, -20, 0, 0)
+docksFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+docksFrame.ClipsDescendants = true
+docksFrame.Parent = mainFrame
+
+local docksLayout = Instance.new("UIListLayout")
+docksLayout.SortOrder = Enum.SortOrder.LayoutOrder
+docksLayout.Padding = UDim.new(0,4)
+docksLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+docksLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+docksLayout.Parent = docksFrame
+
+local docksList = {
+	{"Code 1", Vector3.new(1681.44, 191.23, -1062.22)},
+	{"Code 2", Vector3.new(1681.44, 191.23, -1062.22)},
+	{"Code 3", Vector3.new(1552.65, 168.53, -1132.38)}
+}
+
+for _, dock in ipairs(docksList) do
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1,0,0,25)
+	btn.BackgroundColor3 = Color3.fromRGB(70,70,70)
+	btn.TextColor3 = Color3.fromRGB(255,255,255)
+	btn.Font = Enum.Font.SourceSans
+	btn.TextSize = 14
+	btn.Text = dock[1]
+	btn.Parent = docksFrame
+
+	btn.MouseButton1Click:Connect(function()
+		local char = player.Character or player.CharacterAdded:Wait()
+		if char and char:FindFirstChild("HumanoidRootPart") then
+			char.HumanoidRootPart.CFrame = CFrame.new(dock[2])
+		end
+	end)
+end
+
+-- Lógica desplegable Docks Code
+local expanded = false
+docksBtn.MouseButton1Click:Connect(function()
+	expanded = not expanded
+	if expanded then
+		docksFrame.Size = UDim2.new(1,-20,0,docksLayout.AbsoluteContentSize.Y)
+	else
+		docksFrame.Size = UDim2.new(1,-20,0,0)
+	end
+end)
+docksLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	if expanded then
+		docksFrame.Size = UDim2.new(1,-20,0,docksLayout.AbsoluteContentSize.Y)
+	end
+end)
+
+-- ===== Menú desplegable Lab Code =====
+local labBtn = Instance.new("TextButton")
+labBtn.Size = UDim2.new(1, -20, 0, 30)
+labBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+labBtn.TextColor3 = Color3.fromRGB(255,255,255)
+labBtn.Font = Enum.Font.SourceSansBold
+labBtn.TextSize = 16
+labBtn.Text = "Lab Code"
+labBtn.Parent = mainFrame
+
+local labFrame = Instance.new("Frame")
+labFrame.Size = UDim2.new(1, -20, 0, 0)
+labFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+labFrame.ClipsDescendants = true
+labFrame.Parent = mainFrame
+
+local labLayout = Instance.new("UIListLayout")
+labLayout.SortOrder = Enum.SortOrder.LayoutOrder
+labLayout.Padding = UDim.new(0,4)
+labLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+labLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+labLayout.Parent = labFrame
+
+local labList = {
+	{"Code 1", Vector3.new(-1421.58, 337.89, 334.98)},
+	{"Code 2", Vector3.new(-1129.43, 152.06, -424.47)},
+	{"Code 3", Vector3.new(-1225.34, 153.08, -518.63)},
+	{"Code 4", Vector3.new(-1183.34, 153.41, -545.43)}
+}
+
+for _, code in ipairs(labList) do
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1,0,0,25)
+	btn.BackgroundColor3 = Color3.fromRGB(70,70,70)
+	btn.TextColor3 = Color3.fromRGB(255,255,255)
+	btn.Font = Enum.Font.SourceSans
+	btn.TextSize = 14
+	btn.Text = code[1]
+	btn.Parent = labFrame
+
+	btn.MouseButton1Click:Connect(function()
+		local char = player.Character or player.CharacterAdded:Wait()
+		if char and char:FindFirstChild("HumanoidRootPart") then
+			char.HumanoidRootPart.CFrame = CFrame.new(code[2])
+		end
+	end)
+end
+
+-- Lógica desplegable Lab Code
+local labExpanded = false
+labBtn.MouseButton1Click:Connect(function()
+	labExpanded = not labExpanded
+	if labExpanded then
+		labFrame.Size = UDim2.new(1,-20,0,labLayout.AbsoluteContentSize.Y)
+	else
+		labFrame.Size = UDim2.new(1,-20,0,0)
+	end
+end)
+labLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	if labExpanded then
+		labFrame.Size = UDim2.new(1,-20,0,labLayout.AbsoluteContentSize.Y)
+	end
+end)
+
+-- ===== Botón Camp Code independiente =====
+local campBtn = Instance.new("TextButton")
+campBtn.Size = UDim2.new(1, -20, 0, 30)
+campBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+campBtn.TextColor3 = Color3.fromRGB(255,255,255)
+campBtn.Font = Enum.Font.SourceSansBold
+campBtn.TextSize = 16
+campBtn.Text = "Camp Code = 467854"
+campBtn.Parent = mainFrame
+
+campBtn.MouseButton1Click:Connect(function()
+	local char = player.Character or player.CharacterAdded:Wait()
+	if char and char:FindFirstChild("HumanoidRootPart") then
+		char.HumanoidRootPart.CFrame = Vector3.new(-1421.58, 337.89, 334.98)
+	end
+end)
+
+-- ===== Botón Noclip =====
+local noclipBtn = Instance.new("TextButton")
+noclipBtn.Size = UDim2.new(0, 50, 0, 50)
+noclipBtn.Position = UDim2.new(0.5, -60, 0, 0)
+noclipBtn.BackgroundColor3 = Color3.fromRGB(100,100,100)
+noclipBtn.Text = "Noclip"
+noclipBtn.TextColor3 = Color3.fromRGB(255,255,255)
+noclipBtn.Font = Enum.Font.SourceSansBold
+noclipBtn.TextSize = 14
+noclipBtn.Parent = mainFrame
+
+local noclipEnabled = false
+noclipBtn.MouseButton1Click:Connect(function()
+	noclipEnabled = not noclipEnabled
+	local char = player.Character
+	if char then
+		for _, part in pairs(char:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part.CanCollide = not noclipEnabled
+			end
+		end
+	end
+end)
