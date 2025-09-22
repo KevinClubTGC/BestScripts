@@ -1,0 +1,119 @@
+-- GUI "AKUN ANTI-LAG" que elimina auras y marca con ESP
+-- Pega este LocalScript en StarterPlayer > StarterPlayerScripts
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Crear ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AkunAntiLagGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- Frame principal
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 220, 0, 100)
+frame.Position = UDim2.new(0, 20, 1, -180) -- abajo izquierda más arriba
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = frame
+
+-- Título (arcoíris)
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -10, 0, 28)
+title.Position = UDim2.new(0, 5, 0, 5)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.Text = "LUMORA ANTI LAG"
+title.TextSize = 18
+title.TextColor3 = Color3.new(1,1,1)
+title.Parent = frame
+
+local hue = 0
+RunService.Heartbeat:Connect(function(dt)
+	hue = (hue + dt * 0.3) % 1
+	title.TextColor3 = Color3.fromHSV(hue, 1, 1)
+end)
+
+-- Botón AKUN ANTI-LAG
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0.9, 0, 0, 40)
+button.Position = UDim2.new(0.05, 0, 0.5, -10)
+button.BackgroundColor3 = Color3.fromRGB(0, 170, 100)
+button.Text = "AKUN ANTI-LAG"
+button.Font = Enum.Font.GothamBold
+button.TextSize = 18
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Parent = frame
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 8)
+btnCorner.Parent = button
+
+-- Animación del botón (verde ↔ azul)
+local hue2 = 0.35
+RunService.Heartbeat:Connect(function(dt)
+	hue2 = (hue2 + dt * 0.1) % 1
+	button.BackgroundColor3 = Color3.fromHSV(hue2, 0.8, 1)
+end)
+
+-- Función: eliminar auras y marcar con ESP
+local function limpiarAuras()
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr.Character then
+			local eliminado = false
+			for _, item in ipairs(plr.Character:GetChildren()) do
+				if item:IsA("Accessory") and string.find(item.Name:lower(), "aura") then
+					item:Destroy()
+					eliminado = true
+				end
+			end
+
+			if eliminado then
+				-- Crear un Highlight si no tiene ya uno
+				if not plr.Character:FindFirstChild("ScripterESP") then
+					local esp = Instance.new("Highlight")
+					esp.Name = "ScripterESP"
+					esp.Adornee = plr.Character
+					esp.FillColor = Color3.fromRGB(255, 0, 0) -- rojo
+					esp.OutlineColor = Color3.fromRGB(255, 255, 255)
+					esp.Parent = plr.Character
+				end
+
+				-- Poner BillboardGui con texto "Scripter"
+				if not plr.Character:FindFirstChild("ScripterTag") then
+					local billboard = Instance.new("BillboardGui")
+					billboard.Name = "ScripterTag"
+					billboard.Size = UDim2.new(0,100,0,50)
+					billboard.Adornee = plr.Character:FindFirstChild("Head")
+					billboard.AlwaysOnTop = true
+					billboard.Parent = plr.Character
+
+					local textLabel = Instance.new("TextLabel")
+					textLabel.Size = UDim2.new(1,0,1,0)
+					textLabel.BackgroundTransparency = 1
+					textLabel.Text = "Scripter"
+					textLabel.TextColor3 = Color3.fromRGB(255,0,0)
+					textLabel.TextStrokeTransparency = 0
+					textLabel.Font = Enum.Font.GothamBold
+					textLabel.TextSize = 14
+					textLabel.Parent = billboard
+				end
+			end
+		end
+	end
+end
+
+-- Acción del botón
+button.MouseButton1Click:Connect(function()
+	button.Text = "BUSCANDO AURAS..."
+	limpiarAuras()
+	task.wait(1)
+	button.Text = "AKUN ANTI-LAG"
+end)
