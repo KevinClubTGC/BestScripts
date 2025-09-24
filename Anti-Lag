@@ -66,7 +66,7 @@ RunService.Heartbeat:Connect(function(dt)
 end)
 
 -- Palabras prohibidas
-local palabrasBloqueadas = {"aura", "fur", "forcefield", "suit"}
+local palabrasBloqueadas = {"aura", "fur", "forcefield", "suit", "cool"}
 
 -- Función de limpieza
 local function limpiarAccesorios(character)
