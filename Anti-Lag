@@ -65,8 +65,8 @@ RunService.Heartbeat:Connect(function(dt)
 	button.BackgroundColor3 = Color3.fromHSV(hue2, 0.8, 1)
 end)
 
--- Palabras prohibidas
-local palabrasBloqueadas = {"aura", "fur", "forcefield", "suit", "cool"}
+-- Palabras bloqueadas: SOLO "aura" y "fur"
+local palabrasBloqueadas = {"aura", "fur"}
 
 -- Función de limpieza
 local function limpiarAccesorios(character)
@@ -74,7 +74,7 @@ local function limpiarAccesorios(character)
 	local encontrado = false
 
 	for _, item in ipairs(character:GetChildren()) do
-		if item:IsA("Accessory") or item:IsA("ForceField") then
+		if item:IsA("Accessory") then
 			local nombre = item.Name:lower()
 			for _, palabra in ipairs(palabrasBloqueadas) do
 				if string.find(nombre, palabra) then
@@ -166,6 +166,6 @@ task.spawn(function()
 				limpiarAccesorios(plr.Character)
 			end
 		end
-		task.wait(2) -- ⏳ cada 2 segundos
+		task.wait(2) -- cada 2 segundos
 	end
 end)
