@@ -1,0 +1,12 @@
+-- LocalScript (StarterPlayer > StarterPlayerScripts)
+local camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+
+local FOV = 120
+
+-- Mantiene el FOV fijo en 120
+RunService.RenderStepped:Connect(function()
+    if camera.FieldOfView ~= FOV then
+        camera.FieldOfView = FOV
+    end
+end)
