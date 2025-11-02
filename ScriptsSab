@@ -1,4 +1,5 @@
 loadstring(Game:HttpGet("https://raw.githubusercontent.com/KevinClubTGC/BestScripts/refs/heads/main/Fov120", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
 
 -- This file was protected using Luraph Obfuscator v14.4.2 [https://lura.ph/]
 
